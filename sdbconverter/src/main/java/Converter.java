@@ -1,7 +1,9 @@
 import org.w3c.dom.Document;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -22,14 +24,12 @@ import org.xml.sax.SAXException;
 public class Converter {
     protected static NodeCollection nc;
 
-    private static DBManager getDB() throws Exception{
-        String url = "jdbc:postgresql://localhost:5432/sdb_ass";
-        String user = "postgres";
-        String password = "postgres";
+    private static DBManager getDB(String port, String db_name, String user, String passwd) throws Exception{
+        String url = "jdbc:postgresql://localhost:"+ port+ "/" +db_name;
 
         Properties props = new Properties();
         props.put("user", user);
-        props.put("password", password);
+        props.put("password", passwd);
 
         return new DBManager(url, props);
     }
@@ -37,6 +37,7 @@ public class Converter {
     private static void insertOSMToDB(NodeList nList, DBManager db) throws Exception {
         System.out.println("length : " + nList.getLength());
         for (int temp = 0; temp < nList.getLength(); temp++) {
+            if (temp % 1000 == 0) System.out.println("-----------" + temp + " data --------");
             Node nNode = nList.item(temp);
             if (nNode.getNodeType() == Node.ELEMENT_NODE) {
                 if (nNode.getNodeName().equals("node") ){
@@ -99,8 +100,8 @@ public class Converter {
         return null;
     }
 
-    private static Document getDocument() throws ParserConfigurationException, SAXException, IOException {
-        File fXmlFile = new File("map_1.osm");
+    private static Document getDocument(String path) throws ParserConfigurationException, SAXException, IOException {
+        File fXmlFile = new File(path);
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
         return dBuilder.parse(fXmlFile);
@@ -108,10 +109,27 @@ public class Converter {
 
     public static void main(String[] args){
         try{
-            DBManager postgres = getDB();
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+            System.out.println("Input Port Number");
+            String port = in.readLine();
+
+            System.out.println("Input DB name");
+            String db_name = in.readLine();
+
+            System.out.println("Input user");
+            String user = in.readLine();
+
+            System.out.println("Input password");
+            String passwd = in.readLine();
+
+            System.out.println("Input OSM Data path");
+            String osm_path = in.readLine();
+
+            DBManager postgres = getDB(port, db_name, user, passwd);
             postgres.init();
 
-            Document doc = getDocument();
+            Document doc = getDocument(osm_path);
             doc.getDocumentElement().normalize();
 
             System.out.println("Root element :" + doc.getDocumentElement().getNodeName());

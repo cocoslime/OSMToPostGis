@@ -37,7 +37,6 @@ public class DBManager {
                         ",'" + name.replace("'","''") +
                         "'," + geom + ");";
 
-        System.out.println(sql);
         stmt.executeUpdate(sql);
 
 //        PreparedStatement st = null;
