@@ -32,10 +32,10 @@ public class NodeCollection {
 
     public String getWayGeometry(String type, NodeList list_in_way) throws Exception {
         String ret = "ST_GeomFromText('";
-        if (TypeManager.getGeomType(type) == "POLYGON"){
+        if (TypeManager.getGeomType(type).equals("POLYGON") ){
             ret += "POLYGON((";
         }
-        else if (TypeManager.getGeomType(type) == "LINESTRING"){
+        else if (TypeManager.getGeomType(type).equals("LINESTRING") ){
             ret += "LINESTRING(";
         }
         else{
@@ -54,10 +54,10 @@ public class NodeCollection {
             if (count != list_in_way.getLength() - 1 ) ret += ",";
         }
 
-        if (TypeManager.getGeomType(type) == "POLYGON"){
+        if (TypeManager.getGeomType(type).equals("POLYGON") ){
             ret += "))";
         }
-        else if (TypeManager.getGeomType(type) == "LINESTRING"){
+        else if (TypeManager.getGeomType(type).equals("LINESTRING") ){
             ret += ")";
         }
         else{

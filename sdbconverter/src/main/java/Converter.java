@@ -39,10 +39,10 @@ public class Converter {
         for (int temp = 0; temp < nList.getLength(); temp++) {
             Node nNode = nList.item(temp);
             if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-                if (nNode.getNodeName() == "node"){
+                if (nNode.getNodeName().equals("node") ){
                     Element eElement = (Element) nNode;
                 }
-                else if (nNode.getNodeName() == "way"){
+                else if (nNode.getNodeName().equals("way") ){
                     if (nNode.hasChildNodes()) {
                         Element eElement = (Element) nNode;
                         NodeList taglist = eElement.getElementsByTagName("tag");
@@ -55,7 +55,7 @@ public class Converter {
                         NodeList list_in_way = eElement.getElementsByTagName("nd");
                         String geom = nc.getWayGeometry(type, list_in_way);
 
-                        db.insert(type, Integer.parseInt(eElement.getAttribute("id")), name , geom);
+                        db.insert(type, eElement.getAttribute("id"), name , geom);
                     }
                 }
             }
@@ -67,7 +67,7 @@ public class Converter {
         for (int temp = 0; temp < taglist.getLength(); temp++) {
             Node tag =taglist.item(temp);
             Element eTag = (Element) tag;
-            if (eTag.getAttribute("k") == "name"){
+            if (eTag.getAttribute("k").equals("name") ){
                 return eTag.getAttribute("v");
             }
         }

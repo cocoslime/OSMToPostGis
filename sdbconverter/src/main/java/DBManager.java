@@ -1,5 +1,7 @@
 import java.sql.*;
 import java.util.Properties;
+import org.postgis.*;
+import org.postgresql.*;
 
 /**
  * Created by stem_dong on 2017-06-12.
@@ -24,19 +26,32 @@ public class DBManager {
         return conn;
     }
 
-    public void insert(String table, int id, String name, String geom) throws SQLException {
+    public void insert(String table, String id, String name, String geom) throws SQLException {
 
         Statement stmt = conn.createStatement();
 
         String sql =
                 "INSERT INTO " +
                         table +
-                        "(id,name,geom) VALUES (" + Integer.toString(id) +
-                        ",'" + name +
+                        "(id,name,geom) VALUES (" + id +
+                        ",'" + name.replace("'","''") +
                         "'," + geom + ");";
 
-        //System.out.println(sql);
+        System.out.println(sql);
         stmt.executeUpdate(sql);
+
+//        PreparedStatement st = null;
+//
+//        String prepared_insert_ref =
+//                "INSERT INTO " + table + "(id, name, geom) VALUES (?, ?, ?);";
+//        st = conn.prepareStatement(prepared_insert_ref);
+//
+//        st.setString(1, id);
+//        st.setString(2, name);
+//        st.setObject(3, dna.getLength());
+//        st.setString(4, dna.getSequenceAsString());
+//
+//        st.execute();
     }
 
     public void init() {
@@ -49,7 +64,7 @@ public class DBManager {
         try {
             stmt = conn.createStatement();
             String sql = "CREATE TABLE building " +
-                    "(id INTEGER not NULL, " +
+                    "(id VARCHAR(30) not NULL, " +
                     " name VARCHAR (50), " +
                     " geom GEOMETRY, " +
                     " PRIMARY KEY ( id ))";
@@ -57,7 +72,7 @@ public class DBManager {
 
             stmt = conn.createStatement();
             String road_sql = "CREATE TABLE road " +
-                    "(id INTEGER not NULL, " +
+                    "(id VARCHAR(30) not NULL, " +
                     " name VARCHAR (50), " +
                     " geom GEOMETRY, " +
                     " PRIMARY KEY ( id ))";

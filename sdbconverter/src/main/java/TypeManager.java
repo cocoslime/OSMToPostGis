@@ -3,9 +3,9 @@
  */
 public class TypeManager {
     public static String getGeomType(String tagName){
-        if (tagName == "building" || tagName == "house")
+        if (tagName.equals("building") || tagName.equals("house") )
             return "POLYGON";
-        else if (tagName == "road" || tagName == "footway")
+        else if (tagName.equals("road") || tagName.equals("footway") )
             return "LINESTRING";
         else
             return null;
