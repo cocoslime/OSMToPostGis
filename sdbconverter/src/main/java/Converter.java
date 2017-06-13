@@ -87,8 +87,8 @@ public class Converter {
                 String type = TypeManager.getType_Road(eTag.getAttribute("v"));
                 if (type != null) return type;
             }
-            else if (eTag.getAttribute("k").equals("nature") ){
-                String type = TypeManager.getType_Nature(eTag.getAttribute("v"));
+            else if (eTag.getAttribute("k").equals("natural") ){
+                String type = TypeManager.getType_Natural(eTag.getAttribute("v"));
                 if (type != null) return type;
             }
 

@@ -5,7 +5,7 @@ import org.w3c.dom.Element;
  */
 public class TypeManager {
     public static String getGeomType(String tagName){
-        if (tagName.equals("building") || tagName.equals("house") )
+        if (tagName.equals("building") || tagName.equals("house") ||tagName.equals("natural"))
             return "POLYGON";
         else if (tagName.equals("road") || tagName.equals("footway") )
             return "LINESTRING";
@@ -43,8 +43,9 @@ public class TypeManager {
         return null;
     }
 
-    public static String getType_Nature(String attr){
-        //TODO
+    public static String getType_Natural(String attr){
+        if (!attr.equals("no"))
+            return "natural";
         return null;
     }
 }

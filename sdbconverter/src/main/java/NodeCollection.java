@@ -35,7 +35,7 @@ public class NodeCollection {
 
         int count = 0;
         while (streamReader.hasNext()) {
-            if (count % 1000 == 0) System.out.println("--------- " + count + " done --------");
+            if (count % 100000 == 0) System.out.println("--------- " + count + " done --------");
             count++;
 
             if (streamReader.isStartElement()) {
