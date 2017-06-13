@@ -108,7 +108,18 @@ public class Converter {
         road_map = new HashMap<>();
 
         try{
-            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream("input.txt")));
+            BufferedReader in;
+            BufferedReader branswer = new BufferedReader(new InputStreamReader(System.in));
+            System.out.println("Do you Use input.txt file? (Y/N)");
+            String answer = branswer.readLine();
+
+            if (answer.contains("Y") || answer.contains("y")){
+                in = new BufferedReader(new InputStreamReader(new FileInputStream("input.txt")));
+            }
+            else{
+                in  = new BufferedReader(new InputStreamReader(System.in));
+            }
+
             System.out.println("Input Port Number");
             String port = in.readLine();
 
