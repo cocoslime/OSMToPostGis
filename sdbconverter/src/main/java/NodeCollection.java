@@ -10,8 +10,10 @@ import java.util.HashMap;
  */
 public class NodeCollection {
     private DBManager dbm;
+    private String tranform_crs;
     private HashMap<String, Coordinate> nodemap = new HashMap<>();
-    public NodeCollection(DBManager p_dbm){
+    public NodeCollection(DBManager p_dbm, String crs){
+        tranform_crs = crs;
         dbm = p_dbm;
     }
     public Coordinate getNode(String key){
@@ -72,7 +74,7 @@ public class NodeCollection {
             throw new Exception("wrong type");
         }
 
-        ret += "',4326), 3857)";
+        ret += "',4326), " + tranform_crs + ")";
         return  ret;
     }
 }

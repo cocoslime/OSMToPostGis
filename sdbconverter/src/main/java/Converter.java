@@ -128,6 +128,9 @@ public class Converter {
             System.out.println("Input OSM Data path");
             String osm_path = in.readLine();
 
+            System.out.println("Input CRS to transform");
+            String crs = in.readLine();
+
             DBManager postgres = getDB(port, db_name, user, passwd, schema);
             postgres.init();
 
@@ -137,7 +140,7 @@ public class Converter {
             System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
             NodeList nList = doc.getElementsByTagName("node");
 
-            nc = new NodeCollection(postgres);
+            nc = new NodeCollection(postgres, crs);
             nc.putList(nList);
 
             if (doc.getDocumentElement().hasChildNodes()){
