@@ -62,13 +62,85 @@ public class DBManager {
 
     public void init() {
         System.out.println("DROP TABLES");
-        dropTables();
+        dropBuildingTable();
+        dropRoadTable();
+        dropNaturalTable();
 
         System.out.println("CREATE TABLES");
-        createTables();
+        createBuildingTable();
+        createRoadTable();
+        createNaturalTable();
     }
 
-    private void createTables(){
+    private void dropBuildingTable() {
+        Statement stmt = null;
+        try{
+            stmt = conn.createStatement();
+            String sql = "DROP TABLE IF EXISTS " + schema + ".building";
+            stmt.executeUpdate(sql);
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void dropRoadTable() {
+        Statement stmt = null;
+        try{
+            stmt = conn.createStatement();
+            String sql = "DROP TABLE IF EXISTS " + schema + ".road";
+            stmt.executeUpdate(sql);
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void dropNaturalTable() {
+        Statement stmt = null;
+        try{
+            stmt = conn.createStatement();
+            String sql = "DROP TABLE IF EXISTS " + schema + ".natural";
+            stmt.executeUpdate(sql);
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void createNaturalTable() {
+        Statement stmt = null;
+        try {
+            stmt = conn.createStatement();
+            String road_sql = "CREATE TABLE " + schema + ".natural " +
+                    "(id VARCHAR(30) not NULL, " +
+                    " name VARCHAR (100), " +
+                    " geom GEOMETRY, " +
+                    " PRIMARY KEY ( id ))";
+            stmt.executeUpdate(road_sql);
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void createRoadTable() {
+        Statement stmt = null;
+        try {
+            stmt = conn.createStatement();
+            String road_sql = "CREATE TABLE " + schema + ".road " +
+                    "(id VARCHAR(30) not NULL, " +
+                    " name VARCHAR (100), " +
+                    " geom GEOMETRY, " +
+                    " PRIMARY KEY ( id ))";
+            stmt.executeUpdate(road_sql);
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void createBuildingTable(){
         Statement stmt = null;
         try {
             stmt = conn.createStatement();
@@ -78,33 +150,6 @@ public class DBManager {
                     " geom GEOMETRY, " +
                     " PRIMARY KEY ( id ))";
             stmt.executeUpdate(sql);
-
-            stmt = conn.createStatement();
-            String road_sql = "CREATE TABLE " + schema + ".road " +
-                    "(id VARCHAR(30) not NULL, " +
-                    " name VARCHAR (100), " +
-                    " geom GEOMETRY, " +
-                    " PRIMARY KEY ( id ))";
-            stmt.executeUpdate(road_sql);
-
-
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void dropTables() {
-        Statement stmt = null;
-        try{
-            stmt = conn.createStatement();
-            String sql = "DROP TABLE IF EXISTS " + schema + ".building";
-            stmt.executeUpdate(sql);
-
-            stmt = conn.createStatement();
-            sql = "DROP TABLE IF EXISTS " + schema + ".road";
-            stmt.executeUpdate(sql);
-
         }
         catch (SQLException e) {
             e.printStackTrace();
