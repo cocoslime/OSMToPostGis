@@ -28,17 +28,6 @@ public class DBManager {
         return conn;
     }
 
-    public void insertNode(String id, Coordinate coord) throws SQLException {
-
-        Statement stmt = conn.createStatement();
-
-        String sql = "INSERT INTO node" +
-                        "(id,lat,lon) VALUES (" + id +
-                        "," + Double.toString(coord.lat) +
-                        "," + Double.toString(coord.lon) + ");";
-
-        stmt.executeUpdate(sql);
-    }
 
     public void insert(String table, String id, String name, String geom) throws SQLException {
 
@@ -123,6 +112,19 @@ public class DBManager {
         catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+
+    public void insertNode(String id, Coordinate coord) throws SQLException {
+
+        Statement stmt = conn.createStatement();
+
+        String sql = "INSERT INTO node" +
+                "(id,lat,lon) VALUES (" + id +
+                "," + Double.toString(coord.lat) +
+                "," + Double.toString(coord.lon) + ");";
+
+        stmt.executeUpdate(sql);
     }
 
     public Coordinate getNode(String key) {
