@@ -11,8 +11,8 @@ public class DBManager {
     protected static Connection conn = null;
     protected static String schema;
 
-    public DBManager(String url, Properties prop, String p_schema) throws SQLException {
-        schema = p_schema;
+    public DBManager(String url, Properties prop) throws SQLException {
+
         if(conn == null || conn.isClosed()) {
             try {
                 Class.forName("org.postgresql.Driver");
@@ -39,7 +39,7 @@ public class DBManager {
                         "(id,name,geom) VALUES (" + id +
                         ",'" + name.replace("'","''") +
                         "'," + geom + ");";
-
+       // System.out.println(sql);
         stmt.executeUpdate(sql);
 
 //        PreparedStatement st = null;
@@ -56,8 +56,15 @@ public class DBManager {
 //        st.execute();
     }
 
+    public void setSchema(String p_schema) {
+        schema = p_schema;
+    }
+
     public void init() {
+        System.out.println("DROP TABLES");
         dropTables();
+
+        System.out.println("CREATE TABLES");
         createTables();
     }
 
@@ -67,7 +74,7 @@ public class DBManager {
             stmt = conn.createStatement();
             String sql = "CREATE TABLE " + schema + ".building " +
                     "(id VARCHAR(30) not NULL, " +
-                    " name VARCHAR (50), " +
+                    " name VARCHAR (100), " +
                     " geom GEOMETRY, " +
                     " PRIMARY KEY ( id ))";
             stmt.executeUpdate(sql);
@@ -75,18 +82,11 @@ public class DBManager {
             stmt = conn.createStatement();
             String road_sql = "CREATE TABLE " + schema + ".road " +
                     "(id VARCHAR(30) not NULL, " +
-                    " name VARCHAR (50), " +
+                    " name VARCHAR (100), " +
                     " geom GEOMETRY, " +
                     " PRIMARY KEY ( id ))";
             stmt.executeUpdate(road_sql);
 
-            stmt = conn.createStatement();
-            String node_sql = "CREATE TABLE " + schema + ".node " +
-                    "(id VARCHAR(30) not NULL, " +
-                    " lat float, " +
-                    " lon float, " +
-                    " PRIMARY KEY ( id ))";
-            stmt.executeUpdate(node_sql);
 
         }
         catch (SQLException e) {
@@ -105,9 +105,6 @@ public class DBManager {
             sql = "DROP TABLE IF EXISTS " + schema + ".road";
             stmt.executeUpdate(sql);
 
-            stmt = conn.createStatement();
-            sql = "DROP TABLE IF EXISTS " + schema + ".node";
-            stmt.executeUpdate(sql);
         }
         catch (SQLException e) {
             e.printStackTrace();

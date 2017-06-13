@@ -1,18 +1,11 @@
 import org.w3c.dom.Document;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Properties;
+import java.io.*;
+import java.util.*;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
@@ -23,15 +16,20 @@ import org.xml.sax.SAXException;
  */
 public class Converter {
     protected static NodeCollection nc;
+    protected static GeometryBuilder gb;
+    protected static DBManager dbm;
 
-    private static DBManager getDB(String port, String db_name, String user, String passwd, String schema) throws Exception{
+    protected static Map<String, Integer> building_map;
+    protected static Map<String, Integer> road_map;
+
+    private static DBManager createDBConnection(String port, String db_name, String user, String passwd) throws Exception{
         String url = "jdbc:postgresql://localhost:"+ port+ "/" +db_name;
 
         Properties props = new Properties();
         props.put("user", user);
         props.put("password", passwd);
 
-        return new DBManager(url, props, schema);
+        return new DBManager(url, props);
     }
 
     private static void insertOSMToDB(NodeList nList, DBManager db) throws Exception {
@@ -40,9 +38,8 @@ public class Converter {
             if (temp % 1000 == 0) System.out.println("-----------" + temp + " data --------");
             Node nNode = nList.item(temp);
             if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-                if (nNode.getNodeName().equals("node") ){
-                    Element eElement = (Element) nNode;
-                }
+                if (nNode.getNodeName().equals("node") ) continue;
+
                 else if (nNode.getNodeName().equals("way") ){
                     if (nNode.hasChildNodes()) {
                         Element eElement = (Element) nNode;
@@ -53,10 +50,10 @@ public class Converter {
 
                         String name = getName(taglist);
 
-                        NodeList list_in_way = eElement.getElementsByTagName("nd");
-                        String geom = nc.getWayGeometry(type, list_in_way);
+                        NodeList nList_in_way = eElement.getElementsByTagName("nd");
+                        String geom = gb.makeGeometryTEXT(type, nList_in_way, nc);//nc.getWayGeometry(type, list_in_way);
 
-                        db.insert(type, eElement.getAttribute("id"), name , geom);
+                        if (geom != null) db.insert(type, eElement.getAttribute("id"), name , geom);
                     }
                 }
             }
@@ -81,19 +78,18 @@ public class Converter {
             Element eTag = (Element) tag;
 
             if (eTag.getAttribute("k").equals("building") ){
-                if (eTag.getAttribute("v").equals("house") )
-                    return "building";
-                else
-                    return "building";
+                building_map.put((eTag.getAttribute("v") ), 1);
+                String type = TypeManager.getType_Building(eTag.getAttribute("v"));
+                if (type != null) return type;
             }
             else if (eTag.getAttribute("k").equals("highway") ){
-
-                if (eTag.getAttribute("v").equals("residential") )
-                    return "road";
-                else if (eTag.getAttribute("v").equals("footway") )
-                    return "road";
-                else
-                    return "road";
+                road_map.put((eTag.getAttribute("v") ), 1);
+                String type = TypeManager.getType_Road(eTag.getAttribute("v"));
+                if (type != null) return type;
+            }
+            else if (eTag.getAttribute("k").equals("nature") ){
+                String type = TypeManager.getType_Nature(eTag.getAttribute("v"));
+                if (type != null) return type;
             }
 
         }
@@ -108,8 +104,11 @@ public class Converter {
     }
 
     public static void main(String[] args){
+        building_map = new HashMap<>();
+        road_map = new HashMap<>();
+
         try{
-            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream("input.txt")));
             System.out.println("Input Port Number");
             String port = in.readLine();
 
@@ -121,33 +120,45 @@ public class Converter {
 
             System.out.println("Input password");
             String passwd = in.readLine();
+            dbm = createDBConnection(port, db_name, user, passwd);
 
             System.out.println("Input schema");
             String schema = in.readLine();
+            dbm.setSchema(schema);
+            dbm.init();
 
             System.out.println("Input OSM Data path");
             String osm_path = in.readLine();
 
             System.out.println("Input CRS to transform");
             String crs = in.readLine();
-
-            DBManager postgres = getDB(port, db_name, user, passwd, schema);
-            postgres.init();
+            gb = new GeometryBuilder();
+            gb.setCRS(crs);
 
             Document doc = getDocument(osm_path);
             doc.getDocumentElement().normalize();
 
             System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
-            NodeList nList = doc.getElementsByTagName("node");
 
-            nc = new NodeCollection(postgres, crs);
-            nc.putList(nList);
+            nc = new NodeCollection();
+            nc.makeNodeMap(osm_path);
 
             if (doc.getDocumentElement().hasChildNodes()){
-                insertOSMToDB(doc.getDocumentElement().getChildNodes(), postgres);
+                insertOSMToDB(doc.getDocumentElement().getChildNodes(), dbm);
             }
 
 
+            System.out.println("\n---------------road types---------------");
+            road_map.forEach((e,v)->{
+                        System.out.println(e);
+                    }
+            );
+
+            System.out.println("\n\n---------------building types---------------");
+            building_map.forEach((e,v)->{
+                System.out.println(e);
+                    }
+            );
 
         } catch (Exception e) {
             e.printStackTrace();
