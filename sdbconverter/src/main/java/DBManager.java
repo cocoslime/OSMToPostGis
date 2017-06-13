@@ -9,8 +9,10 @@ import org.postgresql.*;
 public class DBManager {
 
     protected static Connection conn = null;
+    protected static String schema;
 
-    public DBManager(String url, Properties prop) throws SQLException {
+    public DBManager(String url, Properties prop, String p_schema) throws SQLException {
+        schema = p_schema;
         if(conn == null || conn.isClosed()) {
             try {
                 Class.forName("org.postgresql.Driver");
@@ -26,12 +28,24 @@ public class DBManager {
         return conn;
     }
 
+    public void insertNode(String id, Coordinate coord) throws SQLException {
+
+        Statement stmt = conn.createStatement();
+
+        String sql = "INSERT INTO node" +
+                        "(id,lat,lon) VALUES (" + id +
+                        "," + Double.toString(coord.lat) +
+                        "," + Double.toString(coord.lon) + ");";
+
+        stmt.executeUpdate(sql);
+    }
+
     public void insert(String table, String id, String name, String geom) throws SQLException {
 
         Statement stmt = conn.createStatement();
 
         String sql =
-                "INSERT INTO " +
+                "INSERT INTO " + schema +"."+
                         table +
                         "(id,name,geom) VALUES (" + id +
                         ",'" + name.replace("'","''") +
@@ -62,7 +76,7 @@ public class DBManager {
         Statement stmt = null;
         try {
             stmt = conn.createStatement();
-            String sql = "CREATE TABLE building " +
+            String sql = "CREATE TABLE " + schema + ".building " +
                     "(id VARCHAR(30) not NULL, " +
                     " name VARCHAR (50), " +
                     " geom GEOMETRY, " +
@@ -70,12 +84,21 @@ public class DBManager {
             stmt.executeUpdate(sql);
 
             stmt = conn.createStatement();
-            String road_sql = "CREATE TABLE road " +
+            String road_sql = "CREATE TABLE " + schema + ".road " +
                     "(id VARCHAR(30) not NULL, " +
                     " name VARCHAR (50), " +
                     " geom GEOMETRY, " +
                     " PRIMARY KEY ( id ))";
             stmt.executeUpdate(road_sql);
+
+            stmt = conn.createStatement();
+            String node_sql = "CREATE TABLE " + schema + ".node " +
+                    "(id VARCHAR(30) not NULL, " +
+                    " lat float, " +
+                    " lon float, " +
+                    " PRIMARY KEY ( id ))";
+            stmt.executeUpdate(node_sql);
+
         }
         catch (SQLException e) {
             e.printStackTrace();
@@ -86,16 +109,40 @@ public class DBManager {
         Statement stmt = null;
         try{
             stmt = conn.createStatement();
-            String sql = "DROP TABLE IF EXISTS building";
+            String sql = "DROP TABLE IF EXISTS " + schema + ".building";
             stmt.executeUpdate(sql);
 
             stmt = conn.createStatement();
-            sql = "DROP TABLE IF EXISTS road";
+            sql = "DROP TABLE IF EXISTS " + schema + ".road";
             stmt.executeUpdate(sql);
+
+            stmt = conn.createStatement();
+            sql = "DROP TABLE IF EXISTS " + schema + ".node";
+            stmt.executeUpdate(sql);
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Coordinate getNode(String key) {
+        Statement stmt = null;
+
+        Coordinate coord = new Coordinate();
+        try{
+            stmt = conn.createStatement();
+            String sql = "SELECT id, lat, lon FROM Registration WHERE id ==" + key;
+            ResultSet rs = stmt.executeQuery(sql);
+            while(rs.next()){
+                coord.lat = rs.getDouble("lat");
+                coord.lon = rs.getDouble("lon");
+            }
+            rs.close();
 
         }
         catch (SQLException e) {
             e.printStackTrace();
         }
+        return coord;
     }
 }

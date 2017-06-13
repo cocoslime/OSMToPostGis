@@ -24,14 +24,14 @@ import org.xml.sax.SAXException;
 public class Converter {
     protected static NodeCollection nc;
 
-    private static DBManager getDB(String port, String db_name, String user, String passwd) throws Exception{
+    private static DBManager getDB(String port, String db_name, String user, String passwd, String schema) throws Exception{
         String url = "jdbc:postgresql://localhost:"+ port+ "/" +db_name;
 
         Properties props = new Properties();
         props.put("user", user);
         props.put("password", passwd);
 
-        return new DBManager(url, props);
+        return new DBManager(url, props, schema);
     }
 
     private static void insertOSMToDB(NodeList nList, DBManager db) throws Exception {
@@ -109,7 +109,6 @@ public class Converter {
 
     public static void main(String[] args){
         try{
-
             BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
             System.out.println("Input Port Number");
             String port = in.readLine();
@@ -123,10 +122,13 @@ public class Converter {
             System.out.println("Input password");
             String passwd = in.readLine();
 
+            System.out.println("Input schema");
+            String schema = in.readLine();
+
             System.out.println("Input OSM Data path");
             String osm_path = in.readLine();
 
-            DBManager postgres = getDB(port, db_name, user, passwd);
+            DBManager postgres = getDB(port, db_name, user, passwd, schema);
             postgres.init();
 
             Document doc = getDocument(osm_path);
@@ -134,7 +136,8 @@ public class Converter {
 
             System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
             NodeList nList = doc.getElementsByTagName("node");
-            nc = new NodeCollection();
+
+            nc = new NodeCollection(postgres);
             nc.putList(nList);
 
             if (doc.getDocumentElement().hasChildNodes()){

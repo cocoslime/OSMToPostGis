@@ -2,36 +2,44 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 
 /**
  * Created by stem_dong on 2017-06-13.
  */
 public class NodeCollection {
-    private HashMap<String, Element> nodemap = new HashMap<>();
-
-    public Element getNode(String key){
+    private DBManager dbm;
+    private HashMap<String, Coordinate> nodemap = new HashMap<>();
+    public NodeCollection(DBManager p_dbm){
+        dbm = p_dbm;
+    }
+    public Coordinate getNode(String key){
         return nodemap.get(key);
+       // return dbm.getNode(key);
     }
 
-    public void pushNode(String key, Element el){
+    public void pushNode(String key, Coordinate el) throws SQLException {
         nodemap.put(key, el);
+        //dbm.insertNode(key, el);
     }
 
-    public void putList(NodeList nList) {
+    public void putList(NodeList nList) throws SQLException {
+        System.out.println("make Node Table: " + nList.getLength());
         for (int i = 0 ; i < nList.getLength() ; i++){
+            if (i % 1000 == 0) System.out.println("-----" + i + "-----");
             Node nNode = nList.item(i);
             if (nNode.getNodeType() == Node.ELEMENT_NODE) {
                 if (nNode.getNodeName() == "node"){
                     Element eElement = (Element) nNode;
-                    nodemap.put( eElement.getAttribute("id"), eElement);
+                    pushNode( eElement.getAttribute("id"), new Coordinate(Double.parseDouble(eElement.getAttribute("lat")), Double.parseDouble(eElement.getAttribute("lon")))  );
                 }
             }
         }
     }
 
     public String getWayGeometry(String type, NodeList list_in_way) throws Exception {
-        String ret = "ST_GeomFromText('";
+        String ret = "ST_Transform(ST_GeomFromText('";
         if (TypeManager.getGeomType(type).equals("POLYGON") ){
             ret += "POLYGON((";
         }
@@ -46,10 +54,10 @@ public class NodeCollection {
             Node nNode = list_in_way.item(count);
             if (nNode.getNodeType() == Node.ELEMENT_NODE) {
                 Element eElement = (Element) nNode;
-                Element refNode = nodemap.get(eElement.getAttribute("ref"));
-                ret += refNode.getAttribute("lat");
+                Coordinate ref_coord = getNode(eElement.getAttribute("ref"));
+                ret += ref_coord.lat;
                 ret += " ";
-                ret += refNode.getAttribute("lon");
+                ret += ref_coord.lon;
             }
             if (count != list_in_way.getLength() - 1 ) ret += ",";
         }
@@ -64,7 +72,7 @@ public class NodeCollection {
             throw new Exception("wrong type");
         }
 
-        ret += "')";
+        ret += "',4326), 3857)";
         return  ret;
     }
 }
