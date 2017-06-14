@@ -59,6 +59,7 @@ public class Converter {
             }
         }
         System.out.println("----------------------------");
+        db.execute();
     }
 
     private static String getName(NodeList taglist) {
@@ -120,7 +121,7 @@ public class Converter {
                 in  = new BufferedReader(new InputStreamReader(System.in));
             }
 
-            System.out.println("Input Port Number");
+            System.out.println("In  put Port Number");
             String port = in.readLine();
 
             System.out.println("Input DB name");
@@ -157,6 +158,7 @@ public class Converter {
             if (doc.getDocumentElement().hasChildNodes()){
                 insertOSMToDB(doc.getDocumentElement().getChildNodes(), dbm);
             }
+
 
 
             System.out.println("\n---------------road types---------------");

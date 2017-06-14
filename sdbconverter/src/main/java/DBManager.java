@@ -10,7 +10,7 @@ public class DBManager {
 
     protected static Connection conn = null;
     protected static String schema;
-
+    protected static Statement stmt;
     public DBManager(String url, Properties prop) throws SQLException {
 
         if(conn == null || conn.isClosed()) {
@@ -28,10 +28,15 @@ public class DBManager {
         return conn;
     }
 
+    public int[] execute() throws SQLException {
+        int[] count = stmt.executeBatch();
+        conn.commit();
+        return count;
+    }
 
     public void insert(String table, String id, String name, String geom) throws SQLException {
 
-        Statement stmt = conn.createStatement();
+
 
         String sql =
                 "INSERT INTO " + schema +"."+
@@ -40,7 +45,9 @@ public class DBManager {
                         ",'" + name.replace("'","''") +
                         "'," + geom + ");";
        // System.out.println(sql);
-        stmt.executeUpdate(sql);
+       // stmt.executeUpdate(sql);
+        stmt.addBatch(sql);
+
 
 //        PreparedStatement st = null;
 //
@@ -61,99 +68,88 @@ public class DBManager {
     }
 
     public void init() {
-        System.out.println("DROP TABLES");
-        dropBuildingTable();
-        dropRoadTable();
-        dropNaturalTable();
-
-        System.out.println("CREATE TABLES");
-        createBuildingTable();
-        createRoadTable();
-        createNaturalTable();
-    }
-
-    private void dropBuildingTable() {
-        Statement stmt = null;
         try{
             stmt = conn.createStatement();
-            String sql = "DROP TABLE IF EXISTS " + schema + ".building";
-            stmt.executeUpdate(sql);
+            conn.setAutoCommit(false);
+
+            System.out.println("DROP TABLES");
+            dropBuildingTable();
+            dropRoadTable();
+            dropNaturalTable();
+
+            System.out.println("CREATE TABLES");
+            createBuildingTable();
+            createRoadTable();
+            createNaturalTable();
         }
         catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    private void dropRoadTable() {
+    private void dropBuildingTable() throws SQLException {
         Statement stmt = null;
-        try{
-            stmt = conn.createStatement();
-            String sql = "DROP TABLE IF EXISTS " + schema + ".road";
-            stmt.executeUpdate(sql);
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-        }
+
+        stmt = conn.createStatement();
+        String sql = "DROP TABLE IF EXISTS " + schema + ".building";
+        stmt.executeUpdate(sql);
+
     }
 
-    private void dropNaturalTable() {
+    private void dropRoadTable() throws SQLException {
         Statement stmt = null;
-        try{
-            stmt = conn.createStatement();
-            String sql = "DROP TABLE IF EXISTS " + schema + ".natural";
-            stmt.executeUpdate(sql);
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-        }
+
+        stmt = conn.createStatement();
+        String sql = "DROP TABLE IF EXISTS " + schema + ".road";
+        stmt.executeUpdate(sql);
+
     }
 
-    private void createNaturalTable() {
-        Statement stmt = null;
-        try {
-            stmt = conn.createStatement();
-            String road_sql = "CREATE TABLE " + schema + ".natural " +
-                    "(id VARCHAR(30) not NULL, " +
-                    " name VARCHAR (100), " +
-                    " geom GEOMETRY, " +
-                    " PRIMARY KEY ( id ))";
-            stmt.executeUpdate(road_sql);
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-        }
+    private void dropNaturalTable() throws SQLException {
+
+        stmt = conn.createStatement();
+        String sql = "DROP TABLE IF EXISTS " + schema + ".natural";
+        stmt.executeUpdate(sql);
+
     }
 
-    private void createRoadTable() {
+    private void createNaturalTable() throws SQLException {
         Statement stmt = null;
-        try {
-            stmt = conn.createStatement();
-            String road_sql = "CREATE TABLE " + schema + ".road " +
-                    "(id VARCHAR(30) not NULL, " +
-                    " name VARCHAR (100), " +
-                    " geom GEOMETRY, " +
-                    " PRIMARY KEY ( id ))";
-            stmt.executeUpdate(road_sql);
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-        }
+
+        stmt = conn.createStatement();
+        String road_sql = "CREATE TABLE " + schema + ".natural " +
+                "(id VARCHAR(30) not NULL, " +
+                " name VARCHAR (100), " +
+                " geom GEOMETRY, " +
+                " PRIMARY KEY ( id ))";
+        stmt.executeUpdate(road_sql);
+
     }
 
-    private void createBuildingTable(){
+    private void createRoadTable() throws SQLException {
         Statement stmt = null;
-        try {
-            stmt = conn.createStatement();
-            String sql = "CREATE TABLE " + schema + ".building " +
-                    "(id VARCHAR(30) not NULL, " +
-                    " name VARCHAR (100), " +
-                    " geom GEOMETRY, " +
-                    " PRIMARY KEY ( id ))";
-            stmt.executeUpdate(sql);
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-        }
+
+        stmt = conn.createStatement();
+        String road_sql = "CREATE TABLE " + schema + ".road " +
+                "(id VARCHAR(30) not NULL, " +
+                " name VARCHAR (100), " +
+                " geom GEOMETRY, " +
+                " PRIMARY KEY ( id ))";
+        stmt.executeUpdate(road_sql);
+
+    }
+
+    private void createBuildingTable() throws SQLException {
+        Statement stmt = null;
+
+        stmt = conn.createStatement();
+        String sql = "CREATE TABLE " + schema + ".building " +
+                "(id VARCHAR(30) not NULL, " +
+                " name VARCHAR (100), " +
+                " geom GEOMETRY, " +
+                " PRIMARY KEY ( id ))";
+        stmt.executeUpdate(sql);
+
     }
 
 
