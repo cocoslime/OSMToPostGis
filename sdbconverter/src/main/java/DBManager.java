@@ -31,20 +31,21 @@ public class DBManager {
     public int[] execute() throws SQLException {
         int[] count = stmt.executeBatch();
         conn.commit();
+
+        stmt.close();
+        conn.close();
         return count;
     }
 
     public void insert(String table, String id, String name, String geom) throws SQLException {
-
-
-
+        if (name.length() > 100) name = name.substring(0, 100);
         String sql =
                 "INSERT INTO " + schema +"."+
                         table +
-                        "(id,name,geom) VALUES (" + id +
+                        "(id,name,geom) VALUES (" + Long.parseLong(id) +
                         ",'" + name.replace("'","''") +
                         "'," + geom + ");";
-       // System.out.println(sql);
+
        // stmt.executeUpdate(sql);
         stmt.addBatch(sql);
 
@@ -70,7 +71,6 @@ public class DBManager {
     public void init() {
         try{
             stmt = conn.createStatement();
-            conn.setAutoCommit(false);
 
             System.out.println("DROP TABLES");
             dropBuildingTable();
@@ -81,6 +81,8 @@ public class DBManager {
             createBuildingTable();
             createRoadTable();
             createNaturalTable();
+
+            conn.setAutoCommit(false);
         }
         catch (SQLException e) {
             e.printStackTrace();
@@ -97,54 +99,38 @@ public class DBManager {
     }
 
     private void dropRoadTable() throws SQLException {
-        Statement stmt = null;
-
-        stmt = conn.createStatement();
         String sql = "DROP TABLE IF EXISTS " + schema + ".road";
         stmt.executeUpdate(sql);
-
     }
 
     private void dropNaturalTable() throws SQLException {
-
-        stmt = conn.createStatement();
         String sql = "DROP TABLE IF EXISTS " + schema + ".natural";
         stmt.executeUpdate(sql);
-
     }
 
     private void createNaturalTable() throws SQLException {
-        Statement stmt = null;
-
-        stmt = conn.createStatement();
-        String road_sql = "CREATE TABLE " + schema + ".natural " +
-                "(id VARCHAR(30) not NULL, " +
+        String sql = "CREATE TABLE " + schema + ".natural " +
+                "(id BIGINT, " +
                 " name VARCHAR (100), " +
                 " geom GEOMETRY, " +
                 " PRIMARY KEY ( id ))";
-        stmt.executeUpdate(road_sql);
+        stmt.executeUpdate(sql);
 
     }
 
     private void createRoadTable() throws SQLException {
-        Statement stmt = null;
-
-        stmt = conn.createStatement();
-        String road_sql = "CREATE TABLE " + schema + ".road " +
-                "(id VARCHAR(30) not NULL, " +
+        String sql = "CREATE TABLE " + schema + ".road " +
+                "(id BIGINT, " +
                 " name VARCHAR (100), " +
                 " geom GEOMETRY, " +
                 " PRIMARY KEY ( id ))";
-        stmt.executeUpdate(road_sql);
+        stmt.executeUpdate(sql);
 
     }
 
     private void createBuildingTable() throws SQLException {
-        Statement stmt = null;
-
-        stmt = conn.createStatement();
         String sql = "CREATE TABLE " + schema + ".building " +
-                "(id VARCHAR(30) not NULL, " +
+                "(id BIGINT, " +
                 " name VARCHAR (100), " +
                 " geom GEOMETRY, " +
                 " PRIMARY KEY ( id ))";

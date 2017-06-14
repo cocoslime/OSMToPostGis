@@ -24,7 +24,7 @@ public class GeometryBuilder {
 
             Element first = (Element)nList_in_way.item(0);
             Element end = (Element)nList_in_way.item(nList_in_way.getLength()-1);
-            if (first.getAttribute("ref") != end.getAttribute("ref")){
+            if (!first.getAttribute("ref").equals(end.getAttribute("ref"))){
                 return null; //POLYGON Not Closed
             }
         }
@@ -40,6 +40,7 @@ public class GeometryBuilder {
             if (nNode.getNodeType() == Node.ELEMENT_NODE) {
                 Element eElement = (Element) nNode;
                 Coordinate ref_coord = nc.getNode(eElement.getAttribute("ref"));
+                if (ref_coord == null) return null;
                 ret += ref_coord.lat;
                 ret += " ";
                 ret += ref_coord.lon;

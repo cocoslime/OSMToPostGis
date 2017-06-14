@@ -33,9 +33,9 @@ public class Converter {
     }
 
     private static void insertOSMToDB(NodeList nList, DBManager db) throws Exception {
+        int count = 0;
         System.out.println("length : " + nList.getLength());
         for (int temp = 0; temp < nList.getLength(); temp++) {
-            if (temp % 1000 == 0) System.out.println("-----------" + temp + " data --------");
             Node nNode = nList.item(temp);
             if (nNode.getNodeType() == Node.ELEMENT_NODE) {
                 if (nNode.getNodeName().equals("node") ) continue;
@@ -53,13 +53,20 @@ public class Converter {
                         NodeList nList_in_way = eElement.getElementsByTagName("nd");
                         String geom = gb.makeGeometryTEXT(type, nList_in_way, nc);//nc.getWayGeometry(type, list_in_way);
 
-                        if (geom != null) db.insert(type, eElement.getAttribute("id"), name , geom);
+                        if (geom == null)
+                            System.out.println(type + " null");
+                        else {
+                            count++;
+                            if (count % 1000 == 0) System.out.println(count + " data is inserted.");
+                            db.insert(type, eElement.getAttribute("id"), name, geom);
+                        }
                     }
                 }
             }
         }
         System.out.println("----------------------------");
-        db.execute();
+        int[] result = db.execute();
+
     }
 
     private static String getName(NodeList taglist) {
@@ -152,7 +159,7 @@ public class Converter {
 
             System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
 
-            nc = new NodeCollection();
+            nc = new NodeCollection(osm_path);
             nc.makeNodeMap(osm_path);
 
             if (doc.getDocumentElement().hasChildNodes()){

@@ -15,10 +15,35 @@ import java.util.HashMap;
  */
 public class NodeCollection {
     private HashMap<String, Coordinate> nodemap = new HashMap<>();
-    public NodeCollection(){
+    protected String path;
+    public NodeCollection(String path){
+        this.path = path;
     }
 
-    public Coordinate getNode(String key){
+    public Coordinate getNode(String key) throws Exception{
+//        XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+//        InputStream in = new FileInputStream(path);
+//        XMLStreamReader streamReader = inputFactory.createXMLStreamReader(in);
+//        streamReader.nextTag();
+//
+//        int count = 0;
+//        while (streamReader.hasNext()) {
+//            if (streamReader.isStartElement()) {
+//                switch (streamReader.getLocalName()) {
+//                    case "node": {
+//                        if (streamReader.getAttributeValue(null,"id").equals(key) ){
+//                            return new Coordinate(Double.parseDouble(streamReader.getAttributeValue(null,"lat")),
+//                                    Double.parseDouble(streamReader.getAttributeValue(null,"lon")) );
+//                        }
+//
+//                        //break;
+//                    }
+//                }
+//            }
+//            streamReader.next();
+//        }
+//        System.out.println("node " + key + " is not in osm data");
+//        return null;
         return nodemap.get(key);
     }
 
