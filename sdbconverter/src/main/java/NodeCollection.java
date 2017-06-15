@@ -14,7 +14,7 @@ import java.util.HashMap;
  * Created by stem_dong on 2017-06-13.
  */
 public class NodeCollection {
-    private HashMap<String, Coordinate> nodemap = new HashMap<>();
+    private HashMap<Long, Coordinate> nodemap = new HashMap<>();
     protected String path;
     public NodeCollection(String path){
         this.path = path;
@@ -44,10 +44,10 @@ public class NodeCollection {
 //        }
 //        System.out.println("node " + key + " is not in osm data");
 //        return null;
-        return nodemap.get(key);
+        return nodemap.get(Long.parseLong(key) );
     }
 
-    public void pushNode(String key, Coordinate el) throws SQLException {
+    public void pushNode(Long key, Coordinate el) throws SQLException {
         nodemap.put(key, el);
     }
 
@@ -66,7 +66,7 @@ public class NodeCollection {
             if (streamReader.isStartElement()) {
                 switch (streamReader.getLocalName()) {
                     case "node": {
-                        pushNode( streamReader.getAttributeValue(null,"id"),
+                        pushNode( Long.parseLong(streamReader.getAttributeValue(null,"id") ),
                                 new Coordinate(Double.parseDouble(streamReader.getAttributeValue(null,"lat")),
                                         Double.parseDouble(streamReader.getAttributeValue(null,"lon")))  );
                         break;

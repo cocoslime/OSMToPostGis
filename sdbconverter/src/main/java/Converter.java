@@ -154,16 +154,19 @@ public class Converter {
             gb = new GeometryBuilder();
             gb.setCRS(crs);
 
-            Document doc = getDocument(osm_path);
-            doc.getDocumentElement().normalize();
-
-            System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
-
             nc = new NodeCollection(osm_path);
             nc.makeNodeMap(osm_path);
 
+            System.out.println("Get Document from osm file");
+            Document doc = getDocument(osm_path);
+            //doc.getDocumentElement().normalize();
+
+           // System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
+
+
             if (doc.getDocumentElement().hasChildNodes()){
-                insertOSMToDB(doc.getDocumentElement().getChildNodes(), dbm);
+                System.out.println("Start inserting DB");
+                insertOSMToDB(doc.getDocumentElement().getElementsByTagName("way"), dbm);
             }
 
 
