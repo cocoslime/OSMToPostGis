@@ -1,6 +1,7 @@
 import org.w3c.dom.Document;
 
 import java.io.*;
+import java.net.URL;
 import java.util.*;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
@@ -92,10 +93,10 @@ public class Converter {
     }
 
     private static void clearConsole() {
-        for (int i = 0 ; i < 1000 ; i++){
-            System.out.println('\b');
+        for (int i = 0 ; i < 10 ; i++){
+            System.out.println();
         }
-        System.out.println('\r');
+//        System.out.println('\r');
     }
 
     private static void countStat(String type) {
