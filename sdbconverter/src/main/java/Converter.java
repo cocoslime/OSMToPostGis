@@ -71,7 +71,7 @@ public class Converter {
             }
         }
         printStat(count, true);
-        System.out.println("----------------------------");
+        System.out.println("--------------EXECUTING BATCHING--------------");
         int[] result = db.execute();
 
     }
@@ -118,6 +118,21 @@ public class Converter {
             Node tag =taglist.item(temp);
             Element eTag = (Element) tag;
             if (eTag.getAttribute("k").equals("name") ){
+                return eTag.getAttribute("v");
+            }
+        }
+        for (int temp = 0; temp < taglist.getLength(); temp++) {
+            Node tag =taglist.item(temp);
+            Element eTag = (Element) tag;
+            if (eTag.getAttribute("k").equals("building") ){
+                if (!eTag.getAttribute("v").equals("yes") && !eTag.getAttribute("v").equals("no"))
+                    return eTag.getAttribute("v");
+            }
+            if (eTag.getAttribute("k").equals("road") ){
+                if (!eTag.getAttribute("v").equals("yes") && !eTag.getAttribute("v").equals("no"))
+                    return eTag.getAttribute("v");
+            }
+            if (eTag.getAttribute("k").equals("natural")){
                 return eTag.getAttribute("v");
             }
         }
