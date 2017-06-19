@@ -22,6 +22,11 @@ public class Converter {
     protected static Map<String, Integer> building_map;
     protected static Map<String, Integer> natural_map;
 
+    protected static int b_count = 0;
+    protected static int r_count = 0;
+    protected static int water_count = 0;
+    protected static int wood_count = 0;
+
     private static DBManager createDBConnection(String port, String db_name, String user, String passwd) throws Exception{
         String url = "jdbc:postgresql://localhost:"+ port+ "/" +db_name;
 
@@ -47,6 +52,7 @@ public class Converter {
 
                         String type = getType(taglist);
                         if (type == null) continue;
+                        countStat(type);
 
                         String name = getName(taglist);
 
@@ -56,17 +62,55 @@ public class Converter {
                         if (geom == null)
                             System.out.println(type + " null");
                         else {
-                            count++;
-                            if (count % 1000 == 0) System.out.println(count + " data is inserted.");
+                            count ++;
+                            printStat(count, false);
                             db.insert(type, eElement.getAttribute("id"), name, geom);
                         }
                     }
                 }
             }
         }
+        printStat(count, true);
         System.out.println("----------------------------");
         int[] result = db.execute();
 
+    }
+
+    private static void printStat(int count, boolean all) {
+        try {
+            if (count % 1000 == 1 || all){
+                clearConsole();
+                System.out.println("Statistic");
+                System.out.println("Building : " + b_count);
+                System.out.println("Road : " + r_count);
+                System.out.println("Water : " + water_count);
+                System.out.println("Wood : " + wood_count);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void clearConsole() {
+        for (int i = 0 ; i < 1000 ; i++){
+            System.out.println('\b');
+        }
+        System.out.println('\r');
+    }
+
+    private static void countStat(String type) {
+        if (type.equals("building")){
+            b_count++;
+        }
+        if (type.equals("road")){
+            r_count++;
+        }
+        if (type.equals("wood")){
+            wood_count++;
+        }
+        if (type.equals("water")){
+            water_count++;
+        }
     }
 
     private static String getName(NodeList taglist) {
