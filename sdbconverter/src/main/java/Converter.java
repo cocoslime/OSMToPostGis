@@ -355,7 +355,7 @@ public class Converter {
             String type = TypeManager.getType_Road(tag_list.get("highway"));
             if (type != null) return type;
         }
-        if (tag_list.containsKey("highway")){
+        if (tag_list.containsKey("natural")){
             int count = natural_map.containsKey(tag_list.get("natural")) ? natural_map.get((tag_list.get("natural"))) : 0;
             count += 1;
             natural_map.put(tag_list.get("natural"), count);
