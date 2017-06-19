@@ -373,6 +373,8 @@ public class Converter {
             if (tag_list.containsKey("building")){
                 if (!tag_list.get("building").equals("yes") && !tag_list.get("building").equals("yes"))
                     return tag_list.get("building");
+                if (tag_list.get("building").equals("yes"))
+                    return "building";
             }
             if (tag_list.containsKey("road")){
                 if (!tag_list.get("road").equals("yes") && !tag_list.get("road").equals("yes"))
