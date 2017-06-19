@@ -1,3 +1,4 @@
+import javafx.util.Pair;
 import org.w3c.dom.Document;
 
 import java.io.*;
@@ -6,6 +7,8 @@ import java.util.*;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
 
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
@@ -21,6 +24,7 @@ public class Converter {
     protected static DBManager dbm;
 
     protected static Map<String, Integer> building_map;
+    protected static Map<String, Integer> road_map;
     protected static Map<String, Integer> natural_map;
 
     protected static int b_count = 0;
@@ -38,7 +42,7 @@ public class Converter {
         return new DBManager(url, props);
     }
 
-    private static void insertOSMToDB(NodeList nList, DBManager db) throws Exception {
+    private static void insertOSMToDB(NodeList nList) throws Exception {
         int count = 0;
         System.out.println("length : " + nList.getLength());
         for (int temp = 0; temp < nList.getLength(); temp++) {
@@ -60,12 +64,13 @@ public class Converter {
                         NodeList nList_in_way = eElement.getElementsByTagName("nd");
                         String geom = gb.makeGeometryTEXT(type, nList_in_way, nc);//nc.getWayGeometry(type, list_in_way);
 
-                        if (geom == null)
-                            System.out.println(type + " null");
+                        if (geom == null){
+
+                        }
                         else {
                             count ++;
                             printStat(count, false);
-                            db.insert(type, eElement.getAttribute("id"), name, geom);
+                            dbm.insert(type, eElement.getAttribute("id"), name, geom);
                         }
                     }
                 }
@@ -73,7 +78,7 @@ public class Converter {
         }
         printStat(count, true);
         System.out.println("--------------EXECUTING BATCHING--------------");
-        int[] result = db.execute();
+        int[] result = dbm.execute();
 
     }
 
@@ -183,7 +188,7 @@ public class Converter {
     public static void main(String[] args){
         building_map = new HashMap<>();
         natural_map = new HashMap<>();
-
+        road_map = new HashMap<>();
         try{
             BufferedReader in;
             BufferedReader branswer = new BufferedReader(new InputStreamReader(System.in));
@@ -226,19 +231,8 @@ public class Converter {
             nc = new NodeCollection(osm_path);
             nc.makeNodeMap(osm_path);
 
-            System.out.println("Get Document from osm file");
-            Document doc = getDocument(osm_path);
-            //doc.getDocumentElement().normalize();
-
-           // System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
-
-
-            if (doc.getDocumentElement().hasChildNodes()){
-                System.out.println("Start inserting DB");
-                insertOSMToDB(doc.getDocumentElement().getElementsByTagName("way"), dbm);
-            }
-
-
+            //insertDoc(osm_path);
+            insertStream(osm_path);
 
             System.out.println("\n---------------natural types---------------");
             natural_map.forEach((e,v)->{
@@ -254,6 +248,152 @@ public class Converter {
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private static void insertStream(String osm_path) throws Exception{
+        System.out.println("Start inserting DB");
+        XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+        InputStream in = new FileInputStream(osm_path);
+        XMLStreamReader streamReader = inputFactory.createXMLStreamReader(in);
+        streamReader.nextTag();
+
+        int count = 0;
+        while (streamReader.hasNext()) {
+            boolean isWay = false;
+            if (streamReader.isStartElement()) {
+                switch (streamReader.getLocalName()) {
+                    case "way": {
+                        isWay = true;
+                        String id = streamReader.getAttributeValue(null,"id");
+                        streamReader.next();
+                        ArrayList<String> node_list = new ArrayList<>();
+                        Map<String, String> tag_list = new HashMap<>();
+                        String name;
+                        String type;
+
+                        boolean isnext = true;
+                        while (isnext) {
+                            if(streamReader.isStartElement()){
+                                switch (streamReader.getLocalName()){
+                                    case "nd":{
+                                        node_list.add(streamReader.getAttributeValue(null,"ref"));
+                                        break;
+                                    }
+                                    case "tag":{
+                                        if (streamReader.getAttributeValue(null,"k").equals("name")){
+                                            tag_list.put(streamReader.getAttributeValue(null,"k"), streamReader.getAttributeValue(null,"v") );
+                                        }
+                                        if (streamReader.getAttributeValue(null,"k").equals("building")){
+                                            tag_list.put(streamReader.getAttributeValue(null,"k"), streamReader.getAttributeValue(null,"v") );
+                                        }
+                                        else if (streamReader.getAttributeValue(null, "k").equals("highway")){
+                                            tag_list.put(streamReader.getAttributeValue(null,"k"), streamReader.getAttributeValue(null,"v") );
+                                        }
+                                        else if (streamReader.getAttributeValue(null, "k").equals("natural")){
+                                            tag_list.put(streamReader.getAttributeValue(null,"k"), streamReader.getAttributeValue(null,"v") );
+                                        }
+                                        break;
+                                    }
+
+                                }
+                            }
+                            streamReader.next();
+                            if(streamReader.isStartElement()){
+                                if (!streamReader.getLocalName().equals("nd") && !streamReader.getLocalName().equals("tag")) {
+                                    isnext = false;
+                                    break;
+                                }
+                            }
+                        }
+
+                        name = getNameStream(tag_list);
+
+                        type = getTypeStream(tag_list);
+                        if (type == null) continue;
+
+                        countStat(type);
+
+                        String geom = gb.makeGeometryTEXTStream(type, node_list, nc);
+
+                        if (geom == null){
+                            System.out.println(type + " null");
+                        }
+                        else {
+                            count ++;
+                            printStat(count, false);
+                            dbm.insert(type, id, name, geom);
+                        }
+
+                        tag_list.clear();
+                        node_list.clear();
+                        break;
+                    }
+                }
+            }
+            if (!isWay) streamReader.next();
+        }
+        printStat(count, true);
+        System.out.println("--------------EXECUTING BATCHING--------------");
+        int[] result = dbm.execute();
+    }
+
+    private static String getTypeStream(Map<String, String> tag_list) {
+        if (tag_list.containsKey("building")){
+            int count = building_map.containsKey(tag_list.get("building")) ? building_map.get((tag_list.get("building"))) : 0;
+            count += 1;
+            building_map.put(tag_list.get("building"), count);
+
+            String type = TypeManager.getType_Building(tag_list.get("building"));
+            if (type != null) return type;
+        }
+        if (tag_list.containsKey("highway")){
+            int count = road_map.containsKey(tag_list.get("highway")) ? road_map.get((tag_list.get("highway"))) : 0;
+            count += 1;
+            road_map.put(tag_list.get("highway"), count);
+
+            String type = TypeManager.getType_Road(tag_list.get("highway"));
+            if (type != null) return type;
+        }
+        if (tag_list.containsKey("highway")){
+            int count = natural_map.containsKey(tag_list.get("natural")) ? natural_map.get((tag_list.get("natural"))) : 0;
+            count += 1;
+            natural_map.put(tag_list.get("natural"), count);
+
+            String type = TypeManager.getType_Natural(tag_list.get("natural"));
+            if (type != null) return type;
+        }
+
+        return null;
+    }
+
+    private static String getNameStream(Map<String, String> tag_list) {
+        if (tag_list.containsKey("name")) return tag_list.get("name");
+        else{
+            if (tag_list.containsKey("building")){
+                if (!tag_list.get("building").equals("yes") && !tag_list.get("building").equals("yes"))
+                    return tag_list.get("building");
+            }
+            if (tag_list.containsKey("road")){
+                if (!tag_list.get("road").equals("yes") && !tag_list.get("road").equals("yes"))
+                    return tag_list.get("road");
+            }
+            if (tag_list.containsKey("natural")){
+                if (!tag_list.get("natural").equals("yes") && !tag_list.get("natural").equals("yes"))
+                    return tag_list.get("natural");
+            }
+        }
+
+        return "non";
+    }
+
+    private static void insertDoc(String osm_path) throws Exception {
+        System.out.println("Get Document from osm file");
+        Document doc = getDocument(osm_path);
+
+        if (doc.getDocumentElement().hasChildNodes()){
+            System.out.println("Start inserting DB");
+            insertOSMToDB(doc.getDocumentElement().getElementsByTagName("way"));
         }
     }
 
