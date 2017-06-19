@@ -20,7 +20,7 @@ public class Converter {
     protected static DBManager dbm;
 
     protected static Map<String, Integer> building_map;
-    protected static Map<String, Integer> road_map;
+    protected static Map<String, Integer> natural_map;
 
     private static DBManager createDBConnection(String port, String db_name, String user, String passwd) throws Exception{
         String url = "jdbc:postgresql://localhost:"+ port+ "/" +db_name;
@@ -86,16 +86,25 @@ public class Converter {
             Element eTag = (Element) tag;
 
             if (eTag.getAttribute("k").equals("building") ){
-                building_map.put((eTag.getAttribute("v") ), 1);
+
+                int count = building_map.containsKey((eTag.getAttribute("v"))) ? building_map.get((eTag.getAttribute("v"))) : 0;
+                count += 1;
+                building_map.put((eTag.getAttribute("v")), count);
+
                 String type = TypeManager.getType_Building(eTag.getAttribute("v"));
                 if (type != null) return type;
             }
             else if (eTag.getAttribute("k").equals("highway") ){
-                road_map.put((eTag.getAttribute("v") ), 1);
+
                 String type = TypeManager.getType_Road(eTag.getAttribute("v"));
                 if (type != null) return type;
             }
             else if (eTag.getAttribute("k").equals("natural") ){
+
+                int count = natural_map.containsKey((eTag.getAttribute("v"))) ? natural_map.get((eTag.getAttribute("v"))) : 0;
+                count += 1;
+                natural_map.put((eTag.getAttribute("v")), count);
+
                 String type = TypeManager.getType_Natural(eTag.getAttribute("v"));
                 if (type != null) return type;
             }
@@ -113,7 +122,7 @@ public class Converter {
 
     public static void main(String[] args){
         building_map = new HashMap<>();
-        road_map = new HashMap<>();
+        natural_map = new HashMap<>();
 
         try{
             BufferedReader in;
@@ -128,7 +137,7 @@ public class Converter {
                 in  = new BufferedReader(new InputStreamReader(System.in));
             }
 
-            System.out.println("In  put Port Number");
+            System.out.println("Input Port Number");
             String port = in.readLine();
 
             System.out.println("Input DB name");
@@ -171,15 +180,15 @@ public class Converter {
 
 
 
-            System.out.println("\n---------------road types---------------");
-            road_map.forEach((e,v)->{
-                        System.out.println(e);
+            System.out.println("\n---------------natural types---------------");
+            natural_map.forEach((e,v)->{
+                        System.out.println(e + "," + v);
                     }
             );
 
             System.out.println("\n\n---------------building types---------------");
             building_map.forEach((e,v)->{
-                System.out.println(e);
+                System.out.println(e + "," + v);
                     }
             );
 

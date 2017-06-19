@@ -49,6 +49,10 @@ public class DBManager {
        // stmt.executeUpdate(sql);
         stmt.addBatch(sql);
 
+        sql = "";
+        geom = "";
+        name = "";
+
 
 //        PreparedStatement st = null;
 //
@@ -70,17 +74,24 @@ public class DBManager {
 
     public void init() {
         try{
+            String[] tablelist = {"building", "road", "water", "wood"};
+
             stmt = conn.createStatement();
 
-            System.out.println("DROP TABLES");
-            dropBuildingTable();
-            dropRoadTable();
-            dropNaturalTable();
+            for (int i = 0 ; i < tablelist.length ; i++){
+                System.out.println("DROP TABLES");
+                dropTable(tablelist[i]);
+                System.out.println("CREATE TABLES");
+                createTable(tablelist[i]);
+            }
 
-            System.out.println("CREATE TABLES");
-            createBuildingTable();
-            createRoadTable();
-            createNaturalTable();
+//            dropBuildingTable();
+//            dropRoadTable();
+//            dropNaturalTable();
+
+//            createBuildingTable();
+//            createRoadTable();
+//            createNaturalTable();
 
             conn.setAutoCommit(false);
         }
@@ -89,13 +100,24 @@ public class DBManager {
         }
     }
 
-    private void dropBuildingTable() throws SQLException {
-        Statement stmt = null;
+    private void dropTable(String t_name) throws SQLException{
+        String sql = "DROP TABLE IF EXISTS " + schema + "." + t_name;
+        stmt.executeUpdate(sql);
+    }
 
+    private void createTable(String t_name) throws SQLException{
+        String sql = "CREATE TABLE " + schema + "." + t_name +
+                "(id BIGINT, " +
+                " name VARCHAR (100), " +
+                " geom GEOMETRY, " +
+                " PRIMARY KEY ( id ))";
+        stmt.executeUpdate(sql);
+    }
+
+    private void dropBuildingTable() throws SQLException {
         stmt = conn.createStatement();
         String sql = "DROP TABLE IF EXISTS " + schema + ".building";
         stmt.executeUpdate(sql);
-
     }
 
     private void dropRoadTable() throws SQLException {
